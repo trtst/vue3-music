@@ -8,7 +8,7 @@
 
 欢迎 **watch** / **star** / **fork** ,一键三连。 :clap: 
 
- **Vue2.x版本** ：[基于网易云音乐API实现PC端音乐网站](https://gitee.com/trtst/vue_pc_music)
+ **Vue2.x版本** ：[基于网易云音乐API实现PC端音乐网站](https://github.com/trtst/vue_pc_music)
 
 
 #### 项目预览
@@ -24,7 +24,7 @@
 
 ```
 //首先你应当克隆该项目
-git clone https://gitee.com/trtst/vue3-music.git
+git clone https://github.com/trtst/vue3-music.git
  
 // 然后 安装项目依赖
 npm install
