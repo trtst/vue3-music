@@ -1,0 +1,32 @@
+:root {
+    --color-text-main: #2d2d2d;
+    --color-text: #909090;
+    --color-text-height: #ff641e;
+}
+
+* { padding: 0; margin: 0; }
+html, body { height: 100%; font-size: 14px;font-family: PingFang SC,Arial,Microsoft YaHei,sans-serif; color: var(--color-text-main); background-color: #fafafa;}
+a { text-decoration: none;  color: var(--color-text-main);}
+*,*:focus,*:hover, input{ outline:none; }
+::-webkit-scrollbar { width: 0px; }
+::-webkit-scrollbar-track { border-radius: 8px; }
+::-webkit-scrollbar-thumb { border-radius: 8px; background: #ccc; }
+::-webkit-scrollbar-thumb:hover { background: #aaa; }
+::-webkit-scrollbar-thumb:active { background: #999; }
+
+#app, .el-container { width: 100vw; height: 100%; }
+
+.el-aside { width: 270px;}
+
+.aside-box {
+    width: 350px;
+    padding-bottom: 25px;
+    flex-shrink: 0;
+    padding-left: 20px;
+}
+
+@media screen and (max-width: 1500px) {
+    .aside-box {
+        width: 300px;
+    }
+}

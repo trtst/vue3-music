@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    </style>
+</head>
+<body>
+    <audio id="ado" src="2.mp3"></audio>
+    <input type="button" onclick="audio.play()" value="播放" />
+    <input type="button" onclick="audio.pause()" value="暂停" />
+    <canvas id="canvas" height="600" width="600"></canvas>
+</body>
+</html>
+<script>
+    //加载媒体
+    var audio = document.getElementById('ado');
+
+    let AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioContext = new AudioContext();      //实例化AudioContext对象
+
+    let analyser;
+
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+
+    let audioSrc = audioContext.createMediaElementSource(audio); //从audio中获取声音源文件
+    audioSrc.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    let dataArray = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(dataArray);
+
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext("2d");
+
+    ctx.lineWidth = 2;
+    let grd = ctx.createLinearGradient(0, 0, 600, 0);
+    grd.addColorStop(0, "#00d0ff");
+    grd.addColorStop(1, "#eee");
+
+    let het=0;
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        ctx.beginPath();
+        for (let i = 0; i < 200; i++) {
+            let value = dataArray[6*i];
+            ctx.fillStyle = grd;
+            ctx.fillRect(i * 5, 300, 2, -value + 1);
+            ctx.fillRect(i * 5, 280-value, 2, het);
+        }
+        requestAnimationFrame(render);
+    };
+    requestAnimationFrame(render);
+
+
+</script>
