@@ -9,7 +9,7 @@ const instance = axios.create({
     validateStatus: status => {
         return status >= 200 && status < 300; // default
     },
-    baseURL: 'https://vue-music-trtst-com.vercel.app/'
+    baseURL: 'https://www.xxx.com' // 服务端域名
 });
 
 // 添加请求拦截器
