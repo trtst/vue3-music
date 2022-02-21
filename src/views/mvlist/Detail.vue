@@ -262,7 +262,7 @@ export default {
         z-index: 2;
         transition: all .4s linear;
 
-        /deep/ img {
+        :deep(img) {
             height: auto;
         }
     }

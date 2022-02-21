@@ -148,7 +148,7 @@ export default {
     transform: translateY(0);
     transition: transform 1.5s ease-in-out;
 
-    /deep/p {
+    :deep(p) {
         margin: 0;
         line-height: 30px;
         font-size: 14px;

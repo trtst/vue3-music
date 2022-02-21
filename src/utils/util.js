@@ -1,3 +1,5 @@
+import { formatSongInfo } from '@utils/song';
+
 export default {
     // 数字过万的处理
     formartNum (val) {
@@ -81,5 +83,17 @@ export default {
         }
 
         return [...map.values()]
+    },
+    // 处理歌曲
+    formatSongs (list, privileges) {
+        const ret = []
+        list.map((item, index) => {
+            if (item.id) {
+                // 是否有版权播放
+                item.license = !privileges[index].cp
+                ret.push(formatSongInfo(item))
+            }
+        })
+        return ret
     }
 }

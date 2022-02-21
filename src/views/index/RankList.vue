@@ -28,9 +28,9 @@
                         <h5 class="toplist_update">最近更新：{{$utils.formartDate(item.updateTime, 'MM月dd日')}}<span>（{{item.updateFrequency}}）</span></h5>
                     </div>
                     <div class="toplist_wrapper">
-                        <div class="songitem" v-for="(songItem, index) in songList[item.id]" :key="songItem.id">
+                        <div class="songitem" :class="{active: (songItem.vip || songItem.license)}" v-for="(songItem, index) in songList[item.id]" :key="songItem.id">
                             <div class="songimg">
-                                <el-image :src="songItem.al.picUrl + '?param=120y120'">
+                                <el-image :src="songItem.album.picUrl + '?param=120y120'">
                                 <div slot="placeholder" class="image-slot">
                                     <i class="iconfont icon-placeholder"></i>
                                 </div>
@@ -39,11 +39,11 @@
                             <div class="songinfo">
                                 <router-link :to="{ path: '/song', query: { id: songItem.id }}" class="song_title">{{songItem.name}}</router-link>
                                 <div class="song_author">
-                                    <router-link :to="{ path: '/singer', query: { id: author.id }}" class="song_name" v-for="(author, k) in songItem.ar" :key="k">{{ k !== 0 ? '/ ' + author.name : author.name }}</router-link>
+                                    <router-link :to="{ path: '/singer', query: { id: author.id }}" class="song_name" v-for="(author, k) in songItem.singer" :key="k">{{ k !== 0 ? '/ ' + author.name : author.name }}</router-link>
                                 </div>
                             </div>
-                            <div class="songoperate">
-                                <i class="iconfont icon-add" title="添加到列表"></i>
+                            <div class="songoperate" v-if="!songItem.vip && !songItem.license">
+                                <i class="iconfont icon-add" title="添加到列表" @click="addSongList(songItem)"></i>
                                 <i class="iconfont icon-fav" title="添加到收藏"></i>
                             </div>
                         </div>
@@ -55,9 +55,11 @@
 </template>
 <script>
 import { getCurrentInstance, onMounted, reactive, toRefs } from 'vue';
+import { useStore } from 'vuex';
 export default {
     setup() {
         const { proxy } = getCurrentInstance();
+        const store = useStore();
         const info = reactive({
             top_list: [],
             songList: {},
@@ -76,18 +78,25 @@ export default {
             info['top_list'].forEach(async item => {
                 const { data: res } = await proxy.$http.topRankList({ id: item.id })
 
-                info['songList'][item.id] = res.playlist.tracks.splice(0, info.num);
+                info['songList'][item.id] = proxy.$utils.formatSongs(res.playlist.tracks.splice(0, info.num), res.privileges.splice(0, info.num));
             });
 
             info['loading'] = false;
-        }
+        };
+
+        // 添加当前歌曲到播放列表
+        const addSongList = (item) => {
+            store.dispatch('addList', { list: [item] });
+            store.commit('SET_PLAYLISTTIPS', true);
+        };
 
         onMounted(() => {
             getToplist();
         })
 
         return {
-            ...toRefs(info)
+            ...toRefs(info),
+            addSongList
         }
     }
 }
@@ -129,6 +138,10 @@ export default {
         position: relative;
         display: flex;
         padding-bottom: 20px;
+
+        &.active {
+            opacity: .6;
+        }
 
         .songimg {
             flex-shrink:0;

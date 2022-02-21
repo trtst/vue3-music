@@ -83,7 +83,6 @@
 <script>
 import SongList from '@components/SongList.vue';
 import Loading from '@components/Loading.vue'
-import { formatSongInfo } from '@utils/song';
 import { getCurrentInstance, reactive, onMounted, toRefs, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -140,7 +139,7 @@ export default {
             }
 
             info['rankInfo'] = res.playlist
-            info['songList'] = _formatSongs(res.playlist.tracks, res.privileges)
+            info['songList'] = proxy.$utils.formatSongs(res.playlist.tracks, res.privileges)
             info['total'] = info.songList.length
             info['isLoading'] = false
         };
@@ -162,19 +161,6 @@ export default {
                 list: info.songList
             });
             store.commit('SET_PLAYLISTTIPS', true);
-        };
-
-        // 处理歌曲
-        const _formatSongs = (list, privileges) => {
-            const ret = []
-            list.map((item, index) => {
-                if (item.id) {
-                    // 是否有版权播放
-                    item.license = !privileges[index].cp
-                    ret.push(formatSongInfo(item))
-                }
-            })
-            return ret
         };
 
         onMounted(() => {

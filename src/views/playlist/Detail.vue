@@ -71,7 +71,7 @@
                 </div>
             </div>
             <div class="aside-box">
-                <div class="playlist-recom">
+                <div class="playlist-recom" v-if="playlists.length">
                     <h3 class="aside-title">相关歌单推荐</h3>
                     <div class="aside-main recom-main">
                         <router-link class="recom-item" :to="{ path: '/playlist/detail', query: { id: item.id }}" v-for="item in playlists" :key="item.id">
@@ -89,7 +89,7 @@
                         </router-link>
                     </div>
                 </div>
-                <div class="playlist-comment">
+                <div class="playlist-comment" v-if="comments.length">
                     <h3 class="aside-title">歌单评论</h3>
                     <div class="aside-main comment-main">
                         <div class="comment-item" v-for="item in comments" :key="item.commentId">
@@ -116,7 +116,6 @@
 import { getCurrentInstance, reactive, toRefs, computed, onMounted } from 'vue';
 import Loading from '@components/Loading.vue';
 import SongList from '@components/SongList.vue';
-import { formatSongInfo } from '@utils/song';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 export default {
@@ -154,7 +153,7 @@ export default {
 
                 getAllSongs(ids);
             } else {
-                info['songList'] = _formatSongs(res.playlist.tracks)
+                info['songList'] = proxy.$utils.formatSongs(res.playlist.tracks, res.privileges);
                 info['total'] = info['songList'].length
                 info['isLoading'] = false
             }
@@ -179,7 +178,7 @@ export default {
                 info['isLoading'] = true;
                 const { data: res } = await proxy.$http.songDetail({ ids: arrs.join(','), timestamp: new Date().valueOf() + i })
 
-                idsArr = idsArr.concat(_formatSongs(res.songs, res.privileges))
+                idsArr = idsArr.concat(proxy.$utils.formatSongs(res.songs, res.privileges))
             }
 
             info['songList'] = idsArr;
@@ -246,22 +245,6 @@ export default {
             }
             info.details.subscribed = !info.details.subscribed
         };
-
-        // 处理歌曲
-        const _formatSongs = (list, privileges) => {
-            const ret = []
-            list.map((item, index) => {
-                if (item.id) {
-                    // 是否有版权播放
-                    if (privileges) {
-                        item.license = !privileges[index].cp
-                    }
-                    
-                    ret.push(formatSongInfo(item))
-                }
-            })
-            return ret
-        }
 
         onMounted(() => {
             info.id = route.query.id;

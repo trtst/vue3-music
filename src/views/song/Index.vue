@@ -73,7 +73,7 @@
                     </el-image>
                 </div>
             </div>
-            <div class="sidebar-box playlist-simi">
+            <div class="sidebar-box playlist-simi" v-if="playlists.length">
                 <h3 class="aside-title">包含这首歌的歌单</h3>
                 <div class="aside-main playlist-main">
                     <router-link class="playlist-item" :to="{ path: '/playlist/detail', query: { id: item.id }}" v-for="item in playlists" :key="item.id">
@@ -100,7 +100,6 @@ import Lyrics from '@components/Lyrics.vue';
 import CommentList from '@components/Comments.vue';
 
 import { getCurrentInstance, reactive, toRefs, onMounted, computed, ref } from 'vue';
-import { formatSongInfo } from '@utils/song';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 
@@ -143,7 +142,7 @@ export default {
 
             // 是否有版权播放
             res.songs[0].license = !res.privileges[0].cp;
-            info['songInfo'] = formatSongInfo(res.songs[0]);
+            info['songInfo'] = proxy.$utils.formatSongs(res.songs, res.privileges)[0];
             // 显示歌曲简介
             info['coverDesc'] = info['songInfo'].alia.join(' / ');
         };

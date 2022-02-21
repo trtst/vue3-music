@@ -82,7 +82,6 @@
 </template>
 
 <script>
-import { formatSongInfo } from '@utils/song'
 import SongList from '@components/SongList.vue'
 import CommentList from '@components/Comments.vue'
 import { getCurrentInstance, onMounted, computed, reactive, toRefs } from 'vue'
@@ -120,7 +119,12 @@ export default {
             }
 
             info.details = res.album;
-            info.songList = _formatSongs(res.songs);
+            const privileges = [];
+
+            res.songs.forEach(item => {
+                privileges.push(item.privilege);
+            })
+            info.songList = proxy.$utils.formatSongs(res.songs, privileges);
             getArtistAlbum();
         };
 
@@ -173,19 +177,6 @@ export default {
                 return proxy.$msg.error('数据请求失败')
             }
             info.collects = res.subscribers
-        };
-
-        // 处理歌曲
-        const _formatSongs = (list) => {
-            const ret = []
-            list.map((item, index) => {
-                if (item.id) {
-                    // 是否有版权播放
-                    item.license = !list[index].privilege.cp
-                    ret.push(formatSongInfo(item))
-                }
-            })
-            return ret
         };
 
         const _initialize = () => {
