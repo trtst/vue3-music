@@ -44,7 +44,7 @@
             <div class="search-main">
                 <h5>搜索结果<em v-show="total">({{total + typeList[index]['t']}})</em></h5>
                 <div class="search-tab">
-                    <div class="tab-item" v-for="(item, index) in typeList" :key="item.k" :class="{active: type == item.k}" @click="selectType(item, index)">{{item.v}}</div>
+                    <div class="tab-item" v-for="item in typeList" :key="item.k" :class="{active: type == item.k}" @click="selectType(item)">{{item.v}}</div>
                 </div>
                 <div class="search-list" v-if="total || loading">
                     <song-list :songList="list" :stripe="true" :offset="offset" :pageSize="limit" v-if="type == '1'"></song-list>
@@ -181,9 +181,8 @@ export default defineComponent({
             info.loading = false;
         };
 
-        const selectType = (item, index) => {
+        const selectType = item => {
             info['type'] = item.k;
-            info['index'] = index;
             info['total'] = 0;
             info['offset'] = 0
             info['currentpage'] = 0
@@ -248,12 +247,14 @@ export default defineComponent({
         };
 
         onMounted(() => {
+            info['index'] = info.typeList.findIndex(item => item.k == info['type']);
             init();
         });
 
         onBeforeRouteUpdate(to => {
             info['keyVal'] = to.query.key;
             info['type'] = to.query.type || '1';
+            info['index'] = info.typeList.findIndex(item => item.k == info['type']);
             
             init();
         });
