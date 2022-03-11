@@ -171,7 +171,7 @@ export default {
     .ske-info {
         position: relative;
         flex: 1;
-        margin: 20px 0 0 40px;
+        margin: 5% 0 0 10%;
         overflow: hidden;
     }
 

@@ -45,37 +45,38 @@
                         </div>
                         <i class="iconfont" :class="modeIcon.className" :title="modeIcon.title" @click.stop="changePlayMode"></i>
                         <div class="popver" >
-                            <div class="lyric">
-                                <span class="lyric-btn" title="歌词" @click="lyricsHandle">词</span>
-                            </div>
-                            <el-tooltip
-                                class="item"
-                                effect="dark"
-                                placement="top"
-                                :manual="manual"
-                                v-model="isShowPlayListTips"
-                            >
-                                <template #content>已添加到播放列表</template>
-                                <div class="playlist" @click="playlistHandle">
-                                    <i class="iconfont icon-playsong" title="播放列表"></i>
-                                    <div class="playlist-num">{{ 99 > playList.length ? playList.length : '99+'}}</div>
+                            <el-popover placement="top" :width="400" trigger="click" @hide="popverClose">
+                                <template #reference>
+                                    <div class="lyric">
+                                        <span class="lyric-btn" title="歌词" @click="popverHandle">词</span>
+                                    </div>
+                                </template>
+                                <div class="lyrics-container">
+                                    <h3 class="lyrics-header">
+                                        <span>歌词</span>
+                                        <!-- <i class="iconfont icon-closed" @click="popverClose"></i> -->
+                                    </h3>
+                                    <lyrics :sId="curSongInfo.id" :currentTime="currentTime"></lyrics>
                                 </div>
-                            </el-tooltip>
-                            
-                            <div class="lyrics-container" v-show="lyricsVisible">
-                                <h3 class="lyrics-header">
-                                    <span>歌词</span>
-                                    <i class="iconfont icon-closed" @click="lyricsHandle"></i>
-                                </h3>
-                                <lyrics :sId="curSongInfo.id" :currentTime="currentTime"></lyrics>
-                            </div>
-                            <div class="playlist-container" v-show="playlistVisible">
-                                <h3 class="playlist-header">
-                                    <span>播放列表<em>(共{{playList.length}}首)</em></span>
-                                    <div class="delSonglist" @click="clearSonglist"><i class="iconfont icon-del" title="清空列表"></i>清空列表</div>
-                                </h3>
-                                <song-list :songList="playList" :isScroll="true" :height="400" :typeSize="'mini'" :isShowTips="false"></song-list>
-                            </div>
+                            </el-popover>
+
+                            <el-popover placement="top" :width="550" trigger="click" @hide="popverClose">
+                                <template #reference>
+                                    <div class="playlist" @click="popverHandle">
+                                        <span class="tips" v-if="isShowPlayListTips">已添加到播放列表</span>
+                                        <i class="iconfont icon-playsong" title="播放列表"></i>
+                                        <div class="playlist-num">{{ 99 > playList.length ? playList.length : '99+'}}</div>
+                                    </div>
+                                </template>
+                                <div class="playlist-container">
+                                    <h3 class="playlist-header">
+                                        <span>播放列表<em>(共{{playList.length}}首)</em></span>
+                                        <div class="delSonglist" @click="clearSonglist"><i class="iconfont icon-del" title="清空列表"></i>清空列表</div>
+                                    </h3>
+                                    <song-list :songList="playList" :isScroll="true" :height="400" :typeSize="'mini'" :isShowTips="false"></song-list>
+                                </div>
+                            </el-popover>
+
                             <i class="iconfont icon-pip" :class="[isPip ? 'active': '']" @click="picInpic"></i>
                             <i class="iconfont icon-m" @click="changeMini"></i>
                         </div>
@@ -90,7 +91,7 @@
 import ProgressLine from '@components/ProgressLine.vue';
 import Lyrics from '@components/Lyrics.vue';
 import SongList from '@components/SongList.vue';
-import { computed, getCurrentInstance, inject, nextTick, onMounted, reactive, ref, toRefs } from 'vue'
+import { computed, getCurrentInstance, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRefs, watchEffect } from 'vue'
 import { useStore } from 'vuex'
 export default {
     name:'Bar',
@@ -99,8 +100,6 @@ export default {
         
         const { proxy } = getCurrentInstance();
         const info = reactive({
-            lyricsVisible: false,
-            playlistVisible: false,
             // 歌词弹窗时，固定播放条
             isLock: false,
             locked: false,
@@ -112,20 +111,38 @@ export default {
             playMode: 0, // 播放模式  0循环播放、1单曲循环、2随机播放
             volumeNum: 1, // 音量值(0~1)
             oldVolume: 0, // 取消禁音的时候，设置保留的上一次的音量值
-            isPip: false
+            isPip: false,
+            timer: null,
+            tipsTimer: null
         });
         
-        let timer = null;
-
         onMounted(() => {
             leaveBar();
             store.commit('SET_PLAYLIST', playList.value);
         });
 
+        onBeforeUnmount(() => {
+            clearTimeout(info.timer);
+            clearTimeout(info.tipsTimer);
+        })
+
         // 获取播放列表
         const playIndex = computed(() => store.getters.playIndex);
         const playList = computed(() => store.getters.playList);
         const isPlayed = computed(() => store.getters.isPlayed);
+        // 添加歌曲到播放列表后，弹窗tips提示
+        const isShowPlayListTips = computed(() => {
+            let val = store.getters.isShowPlayListTips;
+
+            if (val) {
+                clearTimeout(info.tipsTimer);
+                info.tipsTimer = setTimeout(() => {
+                    store.commit('SET_PLAYLISTTIPS', false);
+                }, 3000)
+            }
+
+            return val;
+        });
 
         // 获取当前播放歌曲信息
         const curSongInfo = computed(() => playList.value[playIndex.value]);
@@ -212,16 +229,14 @@ export default {
             emit('changeMini', 'MiniBar');
         }
 
-        const playlistHandle = () => {
-            info['playlistVisible'] = !info['playlistVisible'];
-            info['lyricsVisible'] = false;
-            info['isLock'] = info['playlistVisible'];
+        const popverHandle = () => {
+            info['isLock'] = true;
         };
 
         const popverClose = () => {
-            info['lyricsVisible'] = info['playlistVisible'] = info['isLock'] = false
+            info['isLock'] = false;
             leaveBar()
-        };
+        }
 
         const enterBar = () => {
             clearTimeout(info.timer)
@@ -245,29 +260,12 @@ export default {
             leaveBar();
         };
 
-        const lyricsHandle = () => {
-            info['lyricsVisible'] = !info['lyricsVisible'];
-            info['playlistVisible'] = false
-            info['isLock'] = info['lyricsVisible']
-        };
-
         // 清空播放列表
         const clearSonglist = () => {
             store.commit('SET_PLAYSTATUS', false);
             store.commit('SET_PLAYLIST', []);
             store.commit('SET_PLAYINDEX', 0);
         };
-
-        // 添加歌曲到播放列表后，弹窗tips提示
-        const isShowPlayListTips = computed(() => {
-            if (store.getters.isShowPlayListTips) {
-                clearTimeout(timer);
-                timer = setTimeout(() => {
-                    store.commit('SET_PLAYLISTTIPS', false);
-                }, 2500);
-            }
-            return store.getters.isShowPlayListTips;
-        });
 
         // 画中画
         const canvas = document.createElement('canvas');
@@ -348,9 +346,8 @@ export default {
             audioProgressWidth,
             changePlayMode,
             popverClose,
-            lyricsHandle,
+            popverHandle,
             clearSonglist,
-            playlistHandle,
             setAudioProgress,
             volumeProgressWidth,
             setvolumeProgress,
@@ -358,6 +355,7 @@ export default {
             changeMini
         }
     },
+
     components: {
         ProgressLine,
         Lyrics,
@@ -544,10 +542,15 @@ export default {
     .playlist {
         position: relative;
         display: inline-block;
+        margin-left: 15px;
         line-height: 70px;
         height: 70px;
         color: #999;
         cursor: pointer;
+
+        .iconfont {
+            margin-left: 0;
+        }
 
         .playlist-num {
             position: absolute;
@@ -556,6 +559,34 @@ export default {
             font-size: 12px;
             line-height: 12px;
             color: #999;
+        }
+
+        .tips {
+            position: absolute;
+            top: -50px;
+            left: -60px;
+            background: rgba(0, 0, 0, .8);
+            display: inline-block;
+            width: 120px;
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            height: 30px;
+            line-height: 30px;
+            padding: 5px 0;
+            border-radius: 4px;
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -6px;
+                left: 47%;
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width: 6px 8px 0 8px;
+                border-color: rgba(0, 0, 0, .8) transparent transparent transparent;
+            }
         }
     }
 
@@ -600,15 +631,7 @@ export default {
     }
 }
 .lyrics-container {
-    position: absolute;
-    left: -200px;
-    bottom: 75px;
-    width: 400px;
-    padding: 20px;
     height: 430px;
-    border: 1px solid #EBEEF5;
-    border-radius: 4px 4px 0 0;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
     background: #fff;
 
     .lyrics-header {
@@ -625,19 +648,20 @@ export default {
 
         .icon-closed {
             font-size: 20px;
+            cursor: pointer;
         }
     }
 }
 .playlist-container {
-    position: absolute;
-    left: -250px;
-    bottom: 75px;
-    width: 500px;
-    padding: 20px;
-    border: 1px solid #EBEEF5;
-    border-radius: 4px 4px 0 0;
+    // position: absolute;
+    // left: -250px;
+    // bottom: 75px;
+    // width: 500px;
+    // padding: 20px;
+    // border: 1px solid #EBEEF5;
+    // border-radius: 4px 4px 0 0;
     font-size: 14px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    // box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
     background: #fff;
 }
 

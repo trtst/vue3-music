@@ -33,5 +33,6 @@ export default {
         const playList = concatPlayList(list, state.playList)
 
         commit(types.SET_PLAYLIST, playList)
+        commit(types.SET_PLAYLISTTIPS, true);
     }
 }

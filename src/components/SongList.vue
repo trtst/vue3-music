@@ -102,6 +102,10 @@ export default {
             type: Number,
             default: 0
         },
+        pageSize: { // 分页 每页展示数量
+            type: Number,
+            default: 20
+        },
     },
     setup(props, context) {
         const curSongRef = ref(null);
@@ -110,7 +114,7 @@ export default {
             typeSize: props.typeSize,
             height: props.height,
             curScroll: -1 || 1,
-            pageSize: 20,
+            pageSize: props.pageSize,
             currentPage: 1,
             playing: false,
             timer: null,

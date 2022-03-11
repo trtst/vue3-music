@@ -320,35 +320,7 @@ export default {
         color: #333;
     }
 }
-.lyrics-container {
-    position: absolute;
-    left: -200px;
-    bottom: 75px;
-    width: 400px;
-    padding: 20px;
-    height: 430px;
-    border: 1px solid #EBEEF5;
-    border-radius: 4px 4px 0 0;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-    background: #fff;
 
-    .lyrics-header {
-        display: flex;
-        padding: 0 0 24px;
-        line-height: 16px;
-        font-weight: 500;
-        font-size: 16px;
-
-        span {
-            display: block;
-            flex: 1;
-        }
-
-        .icon-closed {
-            font-size: 20px;
-        }
-    }
-}
 .playlist-container {
     position: absolute;
     left: -250px;

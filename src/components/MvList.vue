@@ -61,7 +61,7 @@ export default {
 
     .item {
         flex: 30%;
-        max-width: calc(100% / 5 - 20px);
+        max-width: calc(100% / 6 - 20px);
         margin: 20px 10px 0;
         border-radius: 4px;
 
@@ -112,7 +112,7 @@ export default {
         transition: all .4s linear;
 
         :deep(img) {
-            height: auto;
+            width: auto;
         }
     }
 

@@ -3,27 +3,9 @@
         <div class="artist-container">
             <div class="artist-main">
                 <div class="list-container" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="100">
-                    <div class="item" :key="item.id" v-for="item in list">
-                        <em class="circle"></em>
-                        <router-link :to="{ path: '/singer', query: { id: item.id }}" class="faceImg">
-                            <el-image :src="item.picUrl + '?param=120y120'">
-                                <div slot="placeholder" class="image-slot">
-                                    <i class="iconfont icon-placeholder"></i>
-                                </div>
-                            </el-image>
-                        </router-link>
-                        <div class="info">
-                            <div class="info-header">
-                                <router-link :to="{ path: '/singer', query: { id: item.id }}" class="name">{{item.name}}</router-link>
-                                <i class="iconfont icon-collect" :class="{active: item.followed}"></i>
-                            </div>
-                            <div class="info-num">
-                                <span class="albumSize"><em>专辑</em>{{item.albumSize}}</span>
-                                <span class="musicSize"><em>单曲</em>{{item.musicSize}}</span>
-                                <span class="fansSize"><em>粉丝</em>{{$utils.formartNum(item.fansCount)}}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <template v-for="item in list">
+                        <artist-item :item="item"></artist-item>
+                    </template>
                     <template v-if="isLoading">
                         <Loading />
                     </template>
@@ -51,12 +33,14 @@
 </template>
 
 <script>
-import Loading from '@components/Loading.vue'
+import Loading from '@components/Loading.vue';
+import ArtistItem from '@components/ArtistItem.vue';
 import { onMounted, getCurrentInstance, watchEffect, reactive, toRefs } from '@vue/runtime-core';
 export default {
     name: 'Artist',
     components: {
-        Loading
+        Loading,
+        ArtistItem
     },
     setup(props) {
         const { proxy } = getCurrentInstance();
