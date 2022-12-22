@@ -13,7 +13,7 @@
 
 #### 项目预览
 
-[trtst_PC_Vue_3.x_网易云音乐](https://music-trtst-com.vercel.app)
+[trtst_PC_Vue_3.x_网易云音乐](https://m2.trtst.com)
 
 #### 介绍
 
